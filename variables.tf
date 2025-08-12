@@ -1,7 +1,7 @@
 variable "project_id" {
   description = "GCP project ID"
   type        = string
-  default     = jsondecode(file("${path.module}/gcp-key.json")).project_id
+  default     = "maximal-furnace-458310-u2"
 }
 
 variable "region" {
