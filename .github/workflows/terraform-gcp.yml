@@ -1,4 +1,4 @@
-name: Terraform GCP Manual Deploy
+name: Terraform GCP Deploy
 
 on:
   workflow_dispatch:
@@ -6,16 +6,27 @@ on:
       tf_action:
         description: 'Terraform action to run'
         required: true
-        default: 'apply'
+        default: 'plan'
         type: choice
-        options:
-          - plan
-          - apply
-          - destroy
+        options: [plan, apply, destroy]
+      gcp_project:
+        description: 'GCP Project ID (leave blank to use secret)'
+        required: false
+      gcp_region:
+        description: 'GCP Region (leave blank to use secret)'
+        required: false
+      gcp_zone:
+        description: 'GCP Zone (leave blank to use secret)'
+        required: false
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    env:
+      PROJECT_ID: ${{ github.event.inputs.gcp_project || secrets.GCP_PROJECT_ID }}
+      REGION: ${{ github.event.inputs.gcp_region || secrets.GCP_REGION }}
+      ZONE: ${{ github.event.inputs.gcp_zone || secrets.GCP_ZONE }}
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -25,25 +36,21 @@ jobs:
         with:
           terraform_version: 1.9.5
 
-      - name: Create GCP Key File
+      - name: Create GCP Credentials File
         run: |
-          cat > gcp-key.json <<'EOF'
-          ${{ secrets.GCP_CREDENTIALS }}
-          EOF
+          echo "${{ secrets.GCP_CREDENTIALS }}" > gcp-key.json
 
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Run
+      - name: Terraform ${{ github.event.inputs.tf_action }}
         run: |
-          if [ "${{ github.event.inputs.tf_action }}" = "plan" ]; then
-            terraform plan \
-              -var="project_id=${{ secrets.GCP_PROJECT_ID }}" \
-              -var="region=${{ secrets.GCP_REGION }}" \
-              -var="zone=${{ secrets.GCP_ZONE }}"
-          else
-            terraform ${{ github.event.inputs.tf_action }} -auto-approve \
-              -var="project_id=${{ secrets.GCP_PROJECT_ID }}" \
-              -var="region=${{ secrets.GCP_REGION }}" \
-              -var="zone=${{ secrets.GCP_ZONE }}"
-          fi
+          echo "Using Project ID: $PROJECT_ID"
+          echo "Using Region: $REGION"
+          echo "Using Zone: $ZONE"
+
+          terraform ${{ github.event.inputs.tf_action }} \
+            -var="project_id=$PROJECT_ID" \
+            -var="region=$REGION" \
+            -var="zone=$ZONE" \
+            ${ if github.event.inputs.tf_action != 'plan' then "-auto-approve" else "" }
