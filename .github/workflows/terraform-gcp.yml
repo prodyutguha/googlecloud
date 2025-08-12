@@ -1,0 +1,38 @@
+name: Terraform GCP Manual Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      tf_action:
+        description: 'Terraform action (plan/apply/destroy)'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+
+      - name: Create GCP Key File
+        run: echo "${{ secrets.GCP_CREDENTIALS }}" > gcp-key.json
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform ${{ github.event.inputs.tf_action }}
+        run: terraform ${{ github.event.inputs.tf_action }} -auto-approve \
+          -var="project_id=${{ secrets.GCP_PROJECT_ID }}" \
+          -var="region=${{ secrets.GCP_REGION }}" \
+          -var="zone=${{ secrets.GCP_ZONE }}"
