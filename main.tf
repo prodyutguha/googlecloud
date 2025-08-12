@@ -15,8 +15,8 @@ provider "google" {
 }
 
 variable "project_id" {}
-variable "region" {}
-variable "zone" {}
+# variable "region" {}
+# variable "zone" {}
 
 resource "google_compute_network" "vpc_network" {
   name = "terraform-network"
