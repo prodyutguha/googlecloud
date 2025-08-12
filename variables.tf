@@ -1,6 +1,7 @@
 variable "project_id" {
   description = "GCP project ID"
   type        = string
+  default     = jsondecode(file("${path.module}/gcp-key.json")).project_id
 }
 
 variable "region" {
