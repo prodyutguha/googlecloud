@@ -1,7 +1,16 @@
 name: Deploy GCP VM with Terraform
 
 on:
-  workflow_dispatch: # Manual trigger
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Terraform Action (plan or apply)"
+        required: true
+        default: "plan"
+        type: choice
+        options:
+          - plan
+          - apply
 
 jobs:
   terraform:
@@ -18,8 +27,13 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Plan
-        run: terraform plan -var="project_id=YOUR_PROJECT_ID"
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -var="project_id=YOUR_PROJECT_ID"
+      - name: Terraform Plan or Apply
+        run: |
+          if [ "${{ github.event.inputs.action }}" = "plan" ]; then
+            terraform plan -var="project_id=YOUR_PROJECT_ID"
+          elif [ "${{ github.event.inputs.action }}" = "apply" ]; then
+            terraform apply -auto-approve -var="project_id=YOUR_PROJECT_ID"
+          else
+            echo "Invalid action input"
+            exit 1
+          fi
