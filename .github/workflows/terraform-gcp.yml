@@ -25,8 +25,10 @@ jobs:
         with:
           terraform_version: 1.9.5
 
+      # FIX: Write JSON exactly as in secret without breaking formatting
       - name: Create GCP Key File
-        run: echo "${{ secrets.GCP_CREDENTIALS }}" > gcp-key.json
+        run: |
+          echo '${{ secrets.GCP_CREDENTIALS }}' > gcp-key.json
 
       - name: Terraform Init
         run: terraform init
