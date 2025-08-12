@@ -1,39 +1,44 @@
-name: Deploy GCP VM with Terraform
+name: Terraform GCP VM
 
 on:
   workflow_dispatch:
     inputs:
-      action:
-        description: "Terraform Action (plan or apply)"
+      tf_action:
+        description: "Terraform Action"
         required: true
         default: "plan"
         type: choice
         options:
           - plan
           - apply
+          - destroy
+      project_id:
+        description: "GCP Project ID"
+        required: true
+        default: "your-project-id"
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.9.5
 
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Plan or Apply
-        run: |
-          if [ "${{ github.event.inputs.action }}" = "plan" ]; then
-            terraform plan -var="project_id=YOUR_PROJECT_ID"
-          elif [ "${{ github.event.inputs.action }}" = "apply" ]; then
-            terraform apply -auto-approve -var="project_id=YOUR_PROJECT_ID"
-          else
-            echo "Invalid action input"
-            exit 1
-          fi
+      - name: Terraform Plan
+        if: github.event.inputs.tf_action == 'plan'
+        run: terraform plan -var="project_id=${{ github.event.inputs.project_id }}"
+
+      - name: Terraform Apply
+        if: github.event.inputs.tf_action == 'apply'
+        run: terraform apply -auto-approve -var="project_id=${{ github.event.inputs.project_id }}"
+
+      - name: Terraform Destroy
+        if: github.event.inputs.tf_action == 'destroy'
+        run: terraform destroy -auto-approve -var="project_id=${{ github.event.inputs.project_id }}"

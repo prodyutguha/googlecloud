@@ -10,8 +10,8 @@ terraform {
 }
 
 provider "google" {
-  credentials = file("${path.module}/gcp-key.json")
   project     = var.project_id
   region      = var.region
   zone        = var.zone
+  credentials = file("${path.module}/gcp-key.json")
 }
