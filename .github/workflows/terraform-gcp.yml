@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tf_action:
-        description: 'Terraform action (plan/apply/destroy)'
+        description: 'Terraform action to run'
         required: true
         default: 'apply'
         type: choice
@@ -31,8 +31,16 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform ${{ github.event.inputs.tf_action }}
-        run: terraform ${{ github.event.inputs.tf_action }} -auto-approve \
-          -var="project_id=${{ secrets.GCP_PROJECT_ID }}" \
-          -var="region=${{ secrets.GCP_REGION }}" \
-          -var="zone=${{ secrets.GCP_ZONE }}"
+      - name: Terraform Run
+        run: |
+          if [ "${{ github.event.inputs.tf_action }}" = "plan" ]; then
+            terraform plan \
+              -var="project_id=${{ secrets.GCP_PROJECT_ID }}" \
+              -var="region=${{ secrets.GCP_REGION }}" \
+              -var="zone=${{ secrets.GCP_ZONE }}"
+          else
+            terraform ${{ github.event.inputs.tf_action }} -auto-approve \
+              -var="project_id=${{ secrets.GCP_PROJECT_ID }}" \
+              -var="region=${{ secrets.GCP_REGION }}" \
+              -var="zone=${{ secrets.GCP_ZONE }}"
+          fi
