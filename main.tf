@@ -10,8 +10,8 @@ terraform {
 provider "google" {
   credentials = file("gcp-key.json")
   project     = var.project_id
-  region      = var.region
-  zone        = var.zone
+  region      = "us-central1"
+  zone        = "us-central1-a"
 }
 
 variable "project_id" {}
