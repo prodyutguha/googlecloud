@@ -12,20 +12,12 @@ on:
       gcp_project:
         description: 'GCP Project ID (leave blank to use secret)'
         required: false
-      gcp_region:
-        description: 'GCP Region (leave blank to use secret)'
-        required: false
-      gcp_zone:
-        description: 'GCP Zone (leave blank to use secret)'
-        required: false
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
     env:
       PROJECT_ID: ${{ github.event.inputs.gcp_project || secrets.GCP_PROJECT_ID }}
-      REGION: ${{ github.event.inputs.gcp_region || secrets.GCP_REGION }}
-      ZONE: ${{ github.event.inputs.gcp_zone || secrets.GCP_ZONE }}
 
     steps:
       - name: Checkout Repo
@@ -46,11 +38,6 @@ jobs:
       - name: Terraform ${{ github.event.inputs.tf_action }}
         run: |
           echo "Using Project ID: $PROJECT_ID"
-          echo "Using Region: $REGION"
-          echo "Using Zone: $ZONE"
-
           terraform ${{ github.event.inputs.tf_action }} \
             -var="project_id=$PROJECT_ID" \
-            -var="region=$REGION" \
-            -var="zone=$ZONE" \
-            ${ if github.event.inputs.tf_action != 'plan' then "-auto-approve" else "" }
+            $([[ "${{ github.event.inputs.tf_action }}" != "plan" ]] && echo "-auto-approve" || echo "")

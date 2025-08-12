@@ -14,6 +14,7 @@ provider "google" {
   zone        = var.zone
 }
 
+# Example: Create a VM
 resource "google_compute_instance" "vm" {
   name         = "terraform-vm"
   machine_type = "e2-medium"
@@ -27,5 +28,9 @@ resource "google_compute_instance" "vm" {
   network_interface {
     network = "default"
     access_config {}
+  }
+
+  metadata = {
+    ssh-keys = "terraform:${file("~/.ssh/id_rsa.pub")}"
   }
 }
