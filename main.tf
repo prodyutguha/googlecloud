@@ -10,13 +10,11 @@ terraform {
 provider "google" {
   credentials = file("gcp-key.json")
   project     = var.project_id
-  region      = "us-central1"
-  zone        = "us-central1-a"
+  region      = var.region
+  zone        = var.zone
 }
 
-variable "project_id" {}
-variable "region" {}
-variable "zone" {}
+
 
 resource "google_compute_network" "vpc_network" {
   name = "terraform-network"
