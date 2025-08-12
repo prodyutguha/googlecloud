@@ -1,24 +1,16 @@
-name: Terraform GCP Deploy
+name: Deploy GCP VM
 
 on:
   workflow_dispatch:
     inputs:
       tf_action:
-        description: 'Terraform action to run'
+        description: 'Terraform Action (plan or apply)'
         required: true
         default: 'plan'
-        type: choice
-        options: [plan, apply, destroy]
-      gcp_project:
-        description: 'GCP Project ID (leave blank to use secret)'
-        required: false
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
-    env:
-      PROJECT_ID: ${{ github.event.inputs.gcp_project || secrets.GCP_PROJECT_ID }}
-
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -26,18 +18,12 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.9.5
-
-      - name: Create GCP Credentials File
-        run: |
-          echo "${{ secrets.GCP_CREDENTIALS }}" > gcp-key.json
+          terraform_version: 1.6.6
 
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform ${{ github.event.inputs.tf_action }}
+      - name: Terraform Plan or Apply
         run: |
-          echo "Using Project ID: $PROJECT_ID"
           terraform ${{ github.event.inputs.tf_action }} \
-            -var="project_id=$PROJECT_ID" \
-            $([[ "${{ github.event.inputs.tf_action }}" != "plan" ]] && echo "-auto-approve" || echo "")
+            -var "project_id=YOUR_PROJECT_ID"
