@@ -12,10 +12,6 @@ on:
           - plan
           - apply
           - destroy
-      project_id:
-        description: "GCP Project ID"
-        required: true
-        default: "your-project-id"
 
 jobs:
   terraform:
@@ -33,12 +29,12 @@ jobs:
 
       - name: Terraform Plan
         if: github.event.inputs.tf_action == 'plan'
-        run: terraform plan -var="project_id=${{ github.event.inputs.project_id }}"
+        run: terraform plan
 
       - name: Terraform Apply
         if: github.event.inputs.tf_action == 'apply'
-        run: terraform apply -auto-approve -var="project_id=${{ github.event.inputs.project_id }}"
+        run: terraform apply -auto-approve
 
       - name: Terraform Destroy
         if: github.event.inputs.tf_action == 'destroy'
-        run: terraform destroy -auto-approve -var="project_id=${{ github.event.inputs.project_id }}"
+        run: terraform destroy -auto-approve
