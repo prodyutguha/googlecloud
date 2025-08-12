@@ -1,29 +1,25 @@
-name: Deploy GCP VM
+name: Deploy GCP VM with Terraform
 
 on:
-  workflow_dispatch:
-    inputs:
-      tf_action:
-        description: 'Terraform Action (plan or apply)'
-        required: true
-        default: 'plan'
+  workflow_dispatch: # Manual trigger
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Terraform
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.6.6
+          terraform_version: 1.9.5
 
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Plan or Apply
-        run: |
-          terraform ${{ github.event.inputs.tf_action }} \
-            -var "project_id=YOUR_PROJECT_ID"
+      - name: Terraform Plan
+        run: terraform plan -var="project_id=YOUR_PROJECT_ID"
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var="project_id=YOUR_PROJECT_ID"
